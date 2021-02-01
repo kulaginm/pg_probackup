@@ -1659,7 +1659,11 @@ fio_copy_pages(const char *to_fullpath, const char *from_fullpath, pgFile *file,
 	if (use_pagemap)
 		IO_CHECK(fio_write_all(fio_stdout, (*file).pagemap.bitmap, (*file).pagemap.bitmapsize), (*file).pagemap.bitmapsize);
 
-	out = open_local_file_rw(to_fullpath, &out_buf, STDIO_BUFSIZE);
+	//out = open_local_file_rw_append(to_fullpath, &out_buf, STDIO_BUFSIZE);
+	out = fio_fopen(to_fullpath, PG_BINARY_R "+", FIO_BACKUP_HOST);
+	if (out == NULL)
+		elog(ERROR, "Cannot open restore target file \"%s\": %s", to_fullpath, strerror(errno));
+
 	while (true)
 	{
 		fio_header hdr;
@@ -1717,6 +1721,12 @@ fio_copy_pages(const char *to_fullpath, const char *from_fullpath, pgFile *file,
 
 			COMP_FILE_CRC32(true, file->crc, buf, hdr.size);
 
+			elog(INFO, "Copy block %u with size %u of %s", blknum, hdr.size - sizeof(BackupPageHeader), to_fullpath); 
+			if (fio_fseek(out, blknum * BLCKSZ) < 0)
+			{
+				elog(ERROR, "Cannot seek block %u of \"%s\": %s",
+					blknum, to_fullpath, strerror(errno));
+			}
 			// должен прилетать некомпрессированный блок с заголовком
 			// Вставить assert?
 			if (fio_fwrite(out, buf + sizeof(BackupPageHeader), hdr.size - sizeof(BackupPageHeader)) != BLCKSZ)

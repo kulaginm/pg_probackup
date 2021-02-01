@@ -2169,6 +2169,29 @@ open_local_file_rw(const char *to_fullpath, char **out_buf, uint32 buf_size)
 	return out;
 }
 
+/* Open local backup file for writing, set permissions and buffering */
+FILE*
+open_local_file_rw_append(const char *to_fullpath, char **out_buf, uint32 buf_size)
+{
+	FILE *out = NULL;
+	/* open backup file for write  */
+	out = fopen(to_fullpath, PG_BINARY_A);
+	if (out == NULL)
+		elog(ERROR, "Cannot open backup file \"%s\": %s",
+			 to_fullpath, strerror(errno));
+
+	/* update file permission */
+	if (chmod(to_fullpath, FILE_PERMISSION) == -1)
+		elog(ERROR, "Cannot change mode of \"%s\": %s", to_fullpath,
+			 strerror(errno));
+
+	/* enable stdio buffering for output file */
+	*out_buf = pgut_malloc(buf_size);
+	setvbuf(out, *out_buf, _IOFBF, buf_size);
+
+	return out;
+}
+
 /* backup local file */
 int
 send_pages(ConnectionArgs* conn_arg, const char *to_fullpath, const char *from_fullpath,

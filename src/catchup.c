@@ -1463,11 +1463,12 @@ catchup_pg_stop_backup(pgBackup *backup, PGconn *pg_startbackup_conn,
 			val = PQgetvalue(res, 0, 4);
 
 		/* Write tablespace_map */
+		/*
 		if (!exclusive_backup && val && strlen(val) > 0)
 		{
 			char		tablespace_map[MAXPGPATH];
 
-			join_path_components(tablespace_map, path, PG_TABLESPACE_MAP_FILE);
+			join_path_components(tablespace_map, dest_pgdata, PG_TABLESPACE_MAP_FILE);
 			fp = fio_fopen(tablespace_map, PG_BINARY_W, FIO_BACKUP_HOST);
 			if (fp == NULL)
 				elog(ERROR, "can't open tablespace map file \"%s\": %s",
@@ -1493,7 +1494,7 @@ catchup_pg_stop_backup(pgBackup *backup, PGconn *pg_startbackup_conn,
 				parray_append(backup_files_list, file);
 			}
 		}
-
+		*/
 		if (tablespace_map_content)
 			PQclear(tablespace_map_content);
 		PQclear(res);
