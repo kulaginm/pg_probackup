@@ -1084,7 +1084,6 @@ catchup_pg_stop_backup(pgBackup *backup, PGconn *pg_startbackup_conn,
 	uint32		lsn_lo;
 	//XLogRecPtr	restore_lsn = InvalidXLogRecPtr;
 	int			pg_stop_backup_timeout = 0;
-	char		path[MAXPGPATH];
 	char		backup_label[MAXPGPATH];
 	FILE		*fp;
 	pgFile		*file;
